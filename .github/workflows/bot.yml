@@ -1,0 +1,43 @@
+name: El Bot Sincero
+
+on:
+  schedule:
+    # 00:07 UTC = 19:07 hora de Lima, justo después del cierre de la vela diaria
+    - cron: "7 0 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Modo prueba (no envía órdenes): 1 = sí, 0 = no"
+        default: "1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bot
+  cancel-in-progress: false
+
+jobs:
+  operar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Ejecutar bot
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || '0' }}
+          PRESUPUESTO_MAX: "100"
+        run: python bot.py
+      - name: Guardar registro
+        run: |
+          git config user.name "elbotsincero-bot"
+          git config user.email "elbotsincero-bot@users.noreply.github.com"
+          git add registro
+          git diff --cached --quiet || git commit -m "Registro $(date -u +%Y-%m-%d)"
+          git push
