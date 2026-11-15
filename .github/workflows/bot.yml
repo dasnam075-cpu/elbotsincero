@@ -1,9 +1,9 @@
 name: El Bot Sincero
 
+# La ejecución diaria corre en un servidor de Oracle Cloud (Santiago), porque
+# Binance bloquea las conexiones desde los servidores de GitHub (EE. UU.).
+# Este flujo queda solo para ejecutarlo a mano si hiciera falta.
 on:
-  schedule:
-    # 00:07 UTC = 19:07 hora de Lima, justo después del cierre de la vela diaria
-    - cron: "7 0 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
